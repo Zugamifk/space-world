@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Player : MonoBehaviour
+public class Player : MonoBehaviour, ICameraUser
 {
 
     const string k_IdleAnim = "Idle";
@@ -22,17 +22,17 @@ public class Player : MonoBehaviour
     }
 
     [SerializeField]
-    Animator m_Animaton;
-    [SerializeField]
-    Transform m_Root;
-    [SerializeField]
-    Rigidbody2D m_RigidBody;
+    WorldObject m_WorldObject;
 
     IdleState m_IdleState;
     UseState m_UseState;
     State m_CurrentState;
 
+    Camera m_Camera;
+
     public float Speed { get { return 50; } }
+
+    public Camera Camera { get { return m_Camera; } }
 
     class State
     {
@@ -44,7 +44,7 @@ public class Player : MonoBehaviour
         }
         public virtual void OnEnterState()
         {
-            m_Player.m_Animaton.SetTrigger(m_AnimationState);
+            m_Player.m_WorldObject.Animator.SetTrigger(m_AnimationState);
         }
         public virtual void OnExitState()
         {
@@ -116,7 +116,7 @@ public class Player : MonoBehaviour
 
     void Move(Vector2 direction)
     {
-        m_RigidBody.MovePosition((Vector2)m_Root.position + direction * Speed * Time.fixedDeltaTime);
+        m_WorldObject.RigidBody.MovePosition((Vector2)m_WorldObject.Root.position + direction * Speed * Time.fixedDeltaTime);
         Debug.Log("Moving " + direction);
     }
 
@@ -133,4 +133,9 @@ public class Player : MonoBehaviour
         m_CurrentState.UseInput(input);
     }
 
+    public void AcquireCamera(Camera camera)
+    {
+        m_Camera = camera;
+        camera.transform.SetParent(m_WorldObject.Root);
+    }
 }
