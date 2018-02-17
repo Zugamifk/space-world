@@ -74,7 +74,12 @@ public class Player : MonoBehaviour, ICameraUser
                     }
                 default: break;
             }
-            m_Player.Move(input.Movement);
+            if (input.Movement != Vector2.zero)
+            {
+                m_Player.Move(input.Movement);
+                var angle = Vector2.Angle(Vector2.up, input.Movement);
+                m_Player.Rotate(angle);
+            }
         }
     }
 
@@ -118,6 +123,11 @@ public class Player : MonoBehaviour, ICameraUser
     {
         m_WorldObject.RigidBody.MovePosition((Vector2)m_WorldObject.Root.position + direction * Speed * Time.fixedDeltaTime);
         Debug.Log("Moving " + direction);
+    }
+
+    void Rotate(float angle)
+    {
+        m_WorldObject.Renderer.transform.rotation = Quaternion.Euler(0, 0, angle);
     }
 
     private void Update()

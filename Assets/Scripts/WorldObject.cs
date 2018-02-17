@@ -10,8 +10,11 @@ public class WorldObject : MonoBehaviour {
     Transform m_Root;
     [SerializeField]
     Rigidbody2D m_RigidBody;
+    [SerializeField]
+    Renderer m_Renderer;
 
-    public Animator Animator { get
+    public Animator Animator {
+        get
         {
             return m_Animator;
         }
@@ -30,6 +33,14 @@ public class WorldObject : MonoBehaviour {
         get
         {
             return m_RigidBody;
+        }
+    }
+
+    public Renderer Renderer
+    {
+        get
+        {
+            return m_Renderer;
         }
     }
 }
