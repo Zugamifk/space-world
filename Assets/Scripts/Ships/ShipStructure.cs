@@ -11,16 +11,22 @@ namespace Game.Ship
             public Vector2 Position;
         }
 
-        public Graph<Node> Skeleton;
+        public class FrameSection
+        {
+            public Node from;
+            public Node to;
+        }
+
+        public Graph<Node, FrameSection> Skeleton;
         public List<Node> Nodes;
 
         public Structure()
         {
-            Skeleton = new Graph<Node>();
+            Skeleton = new Graph<Node, FrameSection>();
             Nodes = new List<Node>();
         }
 
-        public void AddNode(Vector2 position)
+        public Node AddNode(Vector2 position)
         {
             var node = new Node()
             {
@@ -29,6 +35,19 @@ namespace Game.Ship
             Skeleton.Add(node);
             Nodes.Add(node);
             Debug.Log("Added node at " + position);
+            return node;
+        }
+
+        public FrameSection ConnectNodes(Node a, Node b)
+        {
+            FrameSection fs = new FrameSection()
+            {
+                from = a,
+                to = b
+            };
+            Skeleton.Connect(a, b, fs);
+            Debug.Log("Connected nodes at " + a.Position + " and " + b.Position);
+            return fs;
         }
     }
 }

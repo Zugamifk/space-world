@@ -17,9 +17,9 @@ namespace Unity.UI
         [SerializeField]
         Image m_BuildCursor;
         [SerializeField]
-        ShipNode m_ShipNodeTemplate;
-        [SerializeField]
         RectTransform m_BuildAreaRoot;
+        [SerializeField]
+        ShipView m_ShipView;
 
         ECursorMode m_CurrentCursorMode;
 
@@ -29,28 +29,22 @@ namespace Unity.UI
 
         ShipBuilder m_ShipBuilder;
 
-        ObjectPool<ShipNode> m_NodePool;
-
-        Dictionary<Structure.Node, ShipNode> m_NodeLookup;
-
         private void Awake()
         {
             m_ShipBuilder = new ShipBuilder(null);
+            m_ShipView.Initialize(m_ShipBuilder.Ship);
 
             m_IdleMode = new IdleMode();
             m_BuildMode = new BuildMode()
             {
                 Cursor = m_BuildCursor,
-                Builder = m_ShipBuilder 
+                Builder = m_ShipBuilder
             };
-
-            m_NodePool = new ObjectPool<ShipNode>(m_ShipNodeTemplate);
-            m_NodeLookup = new Dictionary<Structure.Node, ShipNode>();
         }
 
         void Update()
         {
-            if(m_CurrentMode?.Cursor !=null)
+            if (m_CurrentMode?.Cursor != null)
             {
                 m_CurrentMode.Cursor.rectTransform.position = Input.mousePosition;
             }
@@ -64,11 +58,12 @@ namespace Unity.UI
         public void SetActive(bool active)
         {
             gameObject.SetActive(active);
-            if(active)
+            if (active)
             {
                 Initialize();
                 WorldInput.Instance.SetCustomMode(UpdateInput);
-            } else
+            }
+            else
             {
                 WorldInput.Instance.EndCustomMode();
             }
@@ -76,11 +71,12 @@ namespace Unity.UI
 
         void UpdateInput(WorldInput.InputState input)
         {
+            m_CurrentMode.ConsumeInput(input);
         }
 
         void SetMode(Mode mode)
         {
-            if(m_CurrentMode!=null)
+            if (m_CurrentMode != null)
             {
                 SetModeActive(m_CurrentMode, false);
             }
@@ -88,22 +84,10 @@ namespace Unity.UI
             SetModeActive(mode, true);
         }
 
+        // refactor as neededd
         void RebuildBuildingArea()
         {
-            var nodes = m_ShipBuilder.Ship.structure.Nodes;
-            for(int i =0;i<nodes.Count;i++)
-            {
-                Structure.Node node = nodes[i];
-                ShipNode sn;
-                if(!m_NodeLookup.TryGetValue(nodes[i], out sn))
-                {
-                    var nodegraphic = m_NodePool.Get();
-                    nodegraphic.gameObject.SetActive(true);
-                    nodegraphic.transform.SetParent(m_BuildAreaRoot);
-                    nodegraphic.transform.position = node.Position;
-                    m_NodeLookup.Add(nodes[i], nodegraphic);
-                }
-            }
+            m_ShipView.RebuildView();
         }
 
         // ===============================
@@ -117,10 +101,11 @@ namespace Unity.UI
                 mode.Cursor.enabled = active;
             }
 
-            if(active)
+            if (active)
             {
                 m_CurrentMode = mode;
-            } else
+            }
+            else
             {
                 m_CurrentMode = null;
             }
@@ -129,6 +114,7 @@ namespace Unity.UI
         class Mode
         {
             public Image Cursor;
+            public virtual void ConsumeInput(WorldInput.InputState input) { }
             public virtual bool OnClickedBackground() { return false; }
         }
 
@@ -140,10 +126,16 @@ namespace Unity.UI
         class BuildMode : Mode
         {
             public ShipBuilder Builder;
+            Structure.Node m_LastNode;
 
             public override bool OnClickedBackground()
             {
-                Builder.AddNode(Input.mousePosition);
+                var newNode = Builder.AddNode(Input.mousePosition);
+                if (m_LastNode != null)
+                {
+                    Builder.ConnectNodes(m_LastNode, newNode);
+                }
+                m_LastNode = newNode;
                 return true;
             }
         }
@@ -158,7 +150,7 @@ namespace Unity.UI
 
         public void PressedBackground()
         {
-            if(m_CurrentMode.OnClickedBackground())
+            if (m_CurrentMode.OnClickedBackground())
             {
                 RebuildBuildingArea();
             }

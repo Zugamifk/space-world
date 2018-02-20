@@ -13,9 +13,13 @@ namespace Game.Ship
             Ship = ship ?? new Ship();
         }
 
-        public void AddNode(Vector2 position)
+        public Structure.Node AddNode(Vector2 position)
         {
-            Ship.structure.AddNode(position);
+            return Ship.structure.AddNode(position);
+        }
+        public Structure.FrameSection ConnectNodes(Structure.Node a, Structure.Node b)
+        {
+            return Ship.structure.ConnectNodes(a, b);
         }
     }
 }

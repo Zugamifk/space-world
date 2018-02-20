@@ -4,157 +4,61 @@ using System.Collections.Generic;
 
 
 [System.Serializable]
-public class Spline {
-	public delegate Vector3 PointFunction();
-	private struct PointUpdater {
-		public PointFunction func;
-		public int index;
-		public PointUpdater(PointFunction f, int i) {
-			func = f;
-			index = i;
-		}
-	}
-	[SerializeField] public List<Vector3> Points;
-	private List<PointUpdater> m_pointFunctions;
-	private List<System.Action> m_updateFunctions;
+public class Spline
+{
+    public List<Vector2> Points;
+    public float Tension;
+    public float Continuity;
+    public float Bias;
 
-	// this is wrong when chords aren't unit length
-	public float ChordLength {
-		get { return (float)Points.Count-1; }
-	}
+    public Spline(float tension = 0, float continuity = 0, float bias = 0)
+    {
+        Points = new List<Vector2>();
+        Tension = tension;
+        Continuity = continuity;
+        Bias = bias;
+    }
 
-	public int iEnd {
-		get { return Points.Count-1; }
-	}
+    public void AddPoint(Vector2 point, int index = -1)
+    {
+        if (index < 0)
+        {
+            index = Points.Count;
+        }
+        Points.Insert(index, point);
+    }
 
-	private void Init() {
+    public void SetPoint(Vector2 point, int index)
+    {
+        if (index < Points.Count)
+        {
+            Points[index] = point;
+        }
+        else
+        {
+            Points.Insert(index, point);
+        }
+    }
 
-	}
+    public Vector2 Evaluate(float x)
+    {
+        int k = Mathf.FloorToInt(x);
+        Vector2 p1 = Points[k];
+        Vector2 p0 = Points[Mathf.Max(k - 1, 0)];
+        Vector2 p2 = Points[Mathf.Min(k + 1, Points.Count - 1)];
+        Vector2 p3 = Points[Mathf.Min(k + 2, Points.Count - 1)];
 
-	public Spline() {
-		Points = new List<Vector3>();
-		m_pointFunctions = new List<PointUpdater>();
-		m_updateFunctions = new List<System.Action>();
-	}
+        Vector2 m0 = ((1 - Tension) * (1 + Bias) * (1 + Continuity) / 2) * (p1 - p0) +
+            ((1 - Tension) * (1 + Bias) * (1 + Continuity) / 2) * (p2 - p1);
+        Vector2 m1 = ((1 - Tension) * (1 + Bias) * (1 - Continuity) / 2) * (p2 - p1) +
+           ((1 - Tension) * (1 - Bias) * (1 + Continuity) / 2) * (p3 - p2);
 
-	public Spline(List<Vector3> points) : this() {
-		foreach(var p in points) {
-			this.Points.Add (p);
-		}
-	}
+        float t = x % 1;
+        float h00 = (1 + 2 * t) * (1 - t) * (1 - t);
+        float h10 = t * (1 - t) * (1 - t);
+        float h01 = t * t * (3 - 2 * t);
+        float h11 = t * t * (t - 1);
 
-	public void Add(Vector3 point) {
-		Points.Add(point);
-	}
-
-	public void Add(Transform tf, bool track = false) {
-		Points.Add(tf.position);
-		if(track) AddTransformPointUpdater(tf, Points.Count-1);
-	}
-
-	public void AddUpdaterFunction(System.Action f) {
-		m_updateFunctions.Add (f);
-	}
-
-	public void AddPointUpdater(PointFunction f,int i) {
-		m_pointFunctions.Add(new PointUpdater(f, i));
-	}
-
-	public void AddTransformPointUpdater(Transform t, int i) {
-		AddPointUpdater(()=>t.position, Mathf.Clamp(i, 0, Points.Count-1));
-	}
-    
-	public void Update() {
-		foreach(var u in m_updateFunctions) {
-			u();
-		}
-		foreach(var pu in m_pointFunctions) {
-			Points[pu.index] = pu.func();
-		}
-	}
-
-	public Vector3 Evaluate(float t) {
-		if (Points.Count<2) {
-			Debug.LogWarning("Spline needs more points!");
-			return Vector3.zero;
-		}
-		t = Mathf.Clamp(t, 0, Points.Count-1.000001f);
-		int i = Mathf.Clamp(Mathf.FloorToInt(t), 0, Points.Count-2);
-		var m0 = (Points[i+1]-Points[i==0?i:i-1])/2;
-		var m1 = (Points[i+2==Points.Count?i+1:i+2]-Points[i])/2;
-
-		t = t%1;
-		var h00 = (1+2*t)*(1-t)*(1-t);
-		var h10 = t*(1-t)*(1-t);
-		var h01 = t*t*(3-2*t);
-		var h11 = t*t*(t-1);
-
-		return h00*Points[i] + h10*m0 + h01*Points[i+1] + h11*m1;
-	}
-
-	/** Doesn't work right now, could be fiquesed*/
-	public Vector3 EvaluateDerivative(float t) {
-		if (Points.Count<2) {
-			Debug.LogWarning("Spline needs more points!");
-			return Vector3.zero;
-		}
-		t = Mathf.Clamp(t, 0, Points.Count-1.000001f);
-		int i = Mathf.Clamp(Mathf.FloorToInt(t), 0, Points.Count-2);
-		var m0 = (Points[i+1]-Points[i==0?i:i-1])/2;
-		var m1 = (Points[i+2==Points.Count?i+1:i+2]-Points[i])/2;
-
-		t = t%1;
-		var h00 = 6*(t*t-t);
-		var h10 = 3*t*t-4*t+1;
-		var h01 = -6*(t*t-t);
-		var h11 = 3*t*t-2*t;
-
-		return h00*Points[i] + h10*m0 + h01*Points[i+1] + h11*m1;
-	}
-
-	public Vector3 EvaluateNormalized(float t) {
-		return Evaluate(t*(Points.Count-1));
-	}
-
-	public Vector3 EvaluateDerivativeNormalized(float t) {
-		return EvaluateDerivative(t*(Points.Count-1));
-	}
-
-	public void DebugDraw(float step = 0.05f, bool drawControlPoints = false) {
-		if (Points.Count<2) return;
-		Vector3 from = Points[0];
-		for(float t = 0;t<ChordLength;t+=step) {
-			var to = Evaluate (t);
-			var ci = t/(float)Points.Count;
-			Debug.DrawLine(from, to, new Color(ci*ci, ci*(1-ci)*4, (1-ci)*(1-ci)));
-			from = to;
-		}
-		if(drawControlPoints) {
-			for(int i=0;i<Points.Count;i++) {
-				DebugDrawPos((float)i);
-			}
-		}
-	}
-
-	public void DebugDraw(Transform parent, float step = 0.05f) {
-		if (Points.Count<2) return;
-		Vector3 from = Points[0];
-		for(float t = 0;t<ChordLength;t+=step) {
-			var to = Evaluate (t);
-			var ci = t/(float)Points.Count;
-			Debug.DrawLine(parent.TransformPoint(from), parent.TransformPoint(to), new Color(ci*ci, ci*(1-ci)*4, (1-ci)*(1-ci)));
-			from = to;
-		}
-	}
-
-	public void DebugDrawPos(float t) {
-		var fwd = Evaluate(t)-Evaluate(t+0.05f);
-		var pos = Evaluate(t);
-		var perp1 = Vector3.Cross (fwd, Vector3.up);
-		var perp2 = Vector3.Cross(perp1, fwd);
-		var ci = t/(float)Points.Count;
-		var col = new Color(ci*ci, ci*(1-ci)*4, (1-ci)*(1-ci));
-		Debug.DrawLine(pos+perp1, pos-perp1, col);
-		Debug.DrawLine(pos+perp2, pos-perp2, col);
-	}
+        return h00 * p1 + h10 * m0 + h01 * p2 + h11 * m1;
+    }
 }
