@@ -27,6 +27,7 @@ namespace Unity.UI
 
         IdleMode m_IdleMode;
         BuildMode m_BuildMode;
+        NodeEditMode m_NodeEditMode;
         Mode m_CurrentMode;
 
         ShipBuilder m_ShipBuilder;
@@ -36,15 +37,24 @@ namespace Unity.UI
             m_ShipBuilder = new ShipBuilder(null);
             m_ShipView.Initialize(m_ShipBuilder.Ship);
 
-            m_IdleMode = new IdleMode();
+            m_IdleMode = new IdleMode()
+            {
+                Screen = this,
+            };
             m_BuildMode = new BuildMode()
             {
                 Screen =  this,
                 Cursor = m_BuildCursor,
                 Builder = m_ShipBuilder
             };
+            m_NodeEditMode = new NodeEditMode()
+            {
+                Screen = this,
+                Builder = m_ShipBuilder
+            };
 
             m_ShipView.OnAddedNode += AddedNode;
+            m_ShipView.OnRotateFrameNode += OnUsedNodeHandle;
         }
 
         void Update()
@@ -84,13 +94,20 @@ namespace Unity.UI
             SetMode(m_IdleMode);
         }
 
+        void SetNodeEditMode(Structure.Node node)
+        {
+            m_NodeInfoPanel.Show(node);
+            SetMode(m_NodeEditMode);
+            m_NodeEditMode.OnSelectedNode(node);
+        }
+
         void SetMode(Mode mode)
         {
             if (m_CurrentMode != null)
             {
                 SetModeActive(m_CurrentMode, false);
             }
-
+            Debug.Log("currrent mode is " + mode.GetType().ToString());
             SetModeActive(mode, true);
         }
 
@@ -106,14 +123,14 @@ namespace Unity.UI
 
         void SetModeActive(Mode mode, bool active)
         {
-            if (mode.Cursor != null)
+            if(m_CurrentMode!=null)
             {
-                mode.Cursor.enabled = active;
+                m_CurrentMode.SetActive(active);
             }
-
             if (active)
             {
                 m_CurrentMode = mode;
+                mode.SetActive(true);
             }
             else
             {
@@ -125,13 +142,26 @@ namespace Unity.UI
         {
             public ShipBuildingScreen Screen;
             public Image Cursor;
+            public virtual void SetActive(bool active)
+            {
+                if(Cursor!=null)
+                {
+                    Cursor.enabled = active;
+                }
+            }
             public virtual void ConsumeInput(WorldInput.InputState input) { }
             public virtual bool OnClickedBackground() { return false; }
+            public virtual bool OnSelectedNode(Structure.Node node) { return false; }
+            public virtual bool OnUsedNodeEdgeHandle(Structure.Node node, Structure.FrameSection section, float angle) { return false; }
         }
 
         class IdleMode : Mode
         {
-
+            public override bool OnSelectedNode(Structure.Node node)
+            {
+                Screen.SetNodeEditMode(node);
+                return false;
+            }
         }
 
         class BuildMode : Mode
@@ -144,6 +174,20 @@ namespace Unity.UI
                 if(input.alt)
                 {
                     Screen.SetIdleMode();
+                }
+            }
+
+            public override bool OnSelectedNode(Structure.Node node)
+            {
+                if(m_LastNode!=null)
+                {
+                    Builder.ConnectNodes(m_LastNode, node);
+                    m_LastNode = node;
+                    return true;
+                } else
+                {
+                    Screen.SetIdleMode();
+                    return false;
                 }
             }
 
@@ -161,10 +205,35 @@ namespace Unity.UI
 
         class NodeEditMode : Mode
         {
+            public Structure.Node SelectedNode;
+            public ShipBuilder Builder;
+
+            public override void SetActive(bool active)
+            {
+                base.SetActive(active);
+                if(!active)
+                {
+                    Screen.m_ShipView.SelectNode(null);
+                }
+            }
+
             public override bool OnClickedBackground()
             {
                 Screen.SetIdleMode();
                 return false;
+            }
+
+            public override bool OnSelectedNode(Structure.Node node)
+            {
+                SelectedNode = node;
+                Screen.m_ShipView.SelectNode(node);
+                return false;
+            }
+
+            public override bool OnUsedNodeEdgeHandle(Structure.Node node, Structure.FrameSection section, float angle)
+            {
+                Builder.RotateNode(node, section, angle);
+                return true;
             }
         }
 
@@ -194,7 +263,18 @@ namespace Unity.UI
 
         void SelectNode(Structure.Node node)
         {
-            m_NodeInfoPanel.Show(node);
+            if(m_CurrentMode.OnSelectedNode(node))
+            {
+                RebuildBuildingArea();
+            }
+        }
+
+        void OnUsedNodeHandle(Structure.Node node, Structure.FrameSection frame, float angle)
+        {
+            if(m_CurrentMode.OnUsedNodeEdgeHandle(node, frame, angle))
+            {
+                RebuildBuildingArea();
+            }
         }
     }
 }

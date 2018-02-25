@@ -38,6 +38,9 @@ namespace Unity.UI
         public delegate void NodeCallback(Structure.Node node, ShipNode graphic);
         public NodeCallback OnAddedNode;
 
+        public delegate void NodeRotationCallback(Structure.Node node, Structure.FrameSection frame, float angle);
+        public NodeRotationCallback OnRotateFrameNode;
+
         private void Awake()
         {
             m_NodePool = new ObjectPool<ShipNode>(m_ShipNodeTemplate);
@@ -64,8 +67,9 @@ namespace Unity.UI
                 ShipNode sn;
                 if (!m_NodeLookup.TryGetValue(nodes[i], out sn))
                 {
-                    AddNode(nodes[i]);
+                    sn =AddNode(nodes[i]);
                 }
+                sn.transform.position = node.Position;
             }
 
             var skeleton = m_Ship.structure.Skeleton;
@@ -77,31 +81,33 @@ namespace Unity.UI
                     section = m_FramePool.Get();
                     section.gameObject.SetActive(true);
                     section.transform.SetParent(m_FrameRoot);
-                    section.Initialize(e);
                     m_FrameLookup.Add(e, section);
                 }
+                section.Initialize(e);
             }
         }
 
-        void AddNode(Structure.Node node)
+        ShipNode AddNode(Structure.Node node)
         {
             var nodegraphic = m_NodePool.Get();
             nodegraphic.gameObject.SetActive(true);
             nodegraphic.transform.SetParent(m_NodesRoot);
-            nodegraphic.transform.position = node.Position;
             m_NodeLookup.Add(node, nodegraphic);
 
-            nodegraphic.SetOnClick(() => SelectNode(node));
             if (OnAddedNode != null)
             {
                 OnAddedNode.Invoke(node, nodegraphic);
             }
+            return nodegraphic;
         }
 
-        void SelectNode(Structure.Node node)
+        public void SelectNode(Structure.Node node)
         {
             SelectNode(m_SelectedNode, false);
-            SelectNode(node, true);
+            if (node != null)
+            {
+                SelectNode(node, true);
+            }
         }
 
         void SelectNode(Structure.Node node, bool enabled)
@@ -122,6 +128,8 @@ namespace Unity.UI
                         handle.transform.SetParent(g.transform, false);
                         handle.gameObject.SetActive(true);
                         handle.OnDragNode += OnDragNodeHandle;
+                        handle.Initialize(node, worker[i]);
+                        Debug.Log("handle " + handle, handle);
                         m_ActiveNodeHandles.Add(handle);
                     }
                     m_SelectedNode = node;
@@ -133,16 +141,19 @@ namespace Unity.UI
                         m_ActiveNodeHandles[i].gameObject.SetActive(false);
                         m_NodeHandlePool.Return(m_ActiveNodeHandles[i]);
                     }
+                    m_ActiveNodeHandles.Clear();
                     m_SelectedNode = null;
                 }
             }
         }
 
-        void OnDragNodeHandle(ShipNodeConnectionHandle handle, Vector2 position)
+        void OnDragNodeHandle(Structure.Node node, Structure.FrameSection frame, Vector2 position)
         {
             if(m_SelectedNode!=null)
             {
-                Debug.Log("Rotating " + m_SelectedNode);
+                var dir = position - (Vector2)m_SelectedNode.Position;
+                var angle = Vector2.SignedAngle(Vector2.right, dir);
+                OnRotateFrameNode.Invoke(node, frame, angle);
             } else
             {
                 Debug.LogError("Selected node is null! No Node handles should be active!");

@@ -17,6 +17,19 @@ namespace Game.Ship
             public Vector2 fromTangeant;
             public Node to;
             public Vector2 toTangeant;
+            public void SetTangeant(Node node, Vector2 tangeant)
+            {
+                if (node == from)
+                {
+                    fromTangeant = tangeant;
+                } else if(node == to)
+                {
+                    toTangeant = tangeant;
+                } else
+                {
+                    Debug.LogError(node + " node is not connected to " + this);
+                }
+            }
         }
 
         public Graph<Node, FrameSection> Skeleton;
@@ -53,6 +66,13 @@ namespace Game.Ship
             Skeleton.Connect(a, b, fs);
             Debug.Log("Connected nodes at " + a.Position + " and " + b.Position);
             return fs;
+        }
+
+        // possibly return a float indicating actual change in angle
+        public void RotateEdgeNode(Node node, FrameSection frame, float angle)
+        {
+            var tan = Vector2.right.Rotate(angle);
+            frame.SetTangeant(node, tan*500);
         }
     }
 }

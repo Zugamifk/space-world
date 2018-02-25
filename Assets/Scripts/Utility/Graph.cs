@@ -41,6 +41,11 @@ public class Graph<TVertex, TEdge>
 
     public void Connect(TVertex a, TVertex b, TEdge edge)
     {
+        if(a.Equals(b))
+        {
+            Debug.LogError("Both vertices are the same!");
+            return;
+        }
         VertexInfo ai, bi;
         EdgeInfo ei;
         bool ac = m_Vertices.TryGetValue(a, out ai);
@@ -57,7 +62,10 @@ public class Graph<TVertex, TEdge>
                 b = bi
             };
             m_Edges.Add(edge, info);
-            m_Connections.Add(a, b, info);
+            if (!m_Connections.ContainsKeys(a, b))
+            {
+                m_Connections.Add(a, b, info);
+            }
         }
         else
         {
