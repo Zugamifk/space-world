@@ -20,6 +20,8 @@ namespace Unity.UI
         RectTransform m_BuildAreaRoot;
         [SerializeField]
         ShipView m_ShipView;
+        [SerializeField]
+        ShipNodeInfoPanel m_NodeInfoPanel;
 
         ECursorMode m_CurrentCursorMode;
 
@@ -37,9 +39,12 @@ namespace Unity.UI
             m_IdleMode = new IdleMode();
             m_BuildMode = new BuildMode()
             {
+                Screen =  this,
                 Cursor = m_BuildCursor,
                 Builder = m_ShipBuilder
             };
+
+            m_ShipView.OnAddedNode += AddedNode;
         }
 
         void Update()
@@ -72,6 +77,11 @@ namespace Unity.UI
         void UpdateInput(WorldInput.InputState input)
         {
             m_CurrentMode.ConsumeInput(input);
+        }
+
+        void SetIdleMode()
+        {
+            SetMode(m_IdleMode);
         }
 
         void SetMode(Mode mode)
@@ -113,6 +123,7 @@ namespace Unity.UI
 
         class Mode
         {
+            public ShipBuildingScreen Screen;
             public Image Cursor;
             public virtual void ConsumeInput(WorldInput.InputState input) { }
             public virtual bool OnClickedBackground() { return false; }
@@ -128,6 +139,14 @@ namespace Unity.UI
             public ShipBuilder Builder;
             Structure.Node m_LastNode;
 
+            public override void ConsumeInput(WorldInput.InputState input)
+            {
+                if(input.alt)
+                {
+                    Screen.SetIdleMode();
+                }
+            }
+
             public override bool OnClickedBackground()
             {
                 var newNode = Builder.AddNode(Input.mousePosition);
@@ -137,6 +156,15 @@ namespace Unity.UI
                 }
                 m_LastNode = newNode;
                 return true;
+            }
+        }
+
+        class NodeEditMode : Mode
+        {
+            public override bool OnClickedBackground()
+            {
+                Screen.SetIdleMode();
+                return false;
             }
         }
 
@@ -154,6 +182,19 @@ namespace Unity.UI
             {
                 RebuildBuildingArea();
             }
+        }
+
+        // ===============================
+        // Other Callbacks
+        // ===============================
+        void AddedNode(Structure.Node node, ShipNode graphic)
+        {
+            graphic.SetOnClick(()=> SelectNode(node));
+        }
+
+        void SelectNode(Structure.Node node)
+        {
+            m_NodeInfoPanel.Show(node);
         }
     }
 }

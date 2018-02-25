@@ -10,12 +10,16 @@ namespace Unity
         const string k_Horizontal = "Horizontal";
         const string k_Vertical = "Vertical";
         const string k_Use = "Use";
+        const string k_Alt = "Alt";
+        const string k_Mouse1 = "Alt";
+        const string k_Mouse0 = "Use";
 
         public class InputState
         {
             public float x;
             public float y;
             public bool use;
+            public bool alt;
         }
 
         [SerializeField]
@@ -150,7 +154,8 @@ namespace Unity
                     {
                         x = Input.GetAxis(k_Horizontal),
                         y = Input.GetAxis(k_Vertical),
-                        use = Input.GetAxis(k_Use) > 0
+                        use = Input.GetAxis(k_Use) > 0,
+                        alt = Input.GetMouseButtonUp(1)
                     }
                    );
             }

@@ -12,12 +12,11 @@ namespace Unity.UI
         private void Awake()
         {
             m_Button = GetComponent<Button>();
-            m_Button.onClick.AddListener(OnClick);
         }
 
-        void OnClick()
+        public void SetOnClick(UnityEngine.Events.UnityAction onClick)
         {
-
+            m_Button.onClick.AddListener(onClick);
         }
     }
 }

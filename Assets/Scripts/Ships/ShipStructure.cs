@@ -14,7 +14,9 @@ namespace Game.Ship
         public class FrameSection
         {
             public Node from;
+            public Vector2 fromTangeant;
             public Node to;
+            public Vector2 toTangeant;
         }
 
         public Graph<Node, FrameSection> Skeleton;
@@ -40,10 +42,13 @@ namespace Game.Ship
 
         public FrameSection ConnectNodes(Node a, Node b)
         {
+            var diff = b.Position - a.Position;
             FrameSection fs = new FrameSection()
             {
                 from = a,
-                to = b
+                fromTangeant = diff,
+                to = b,
+                toTangeant = -diff
             };
             Skeleton.Connect(a, b, fs);
             Debug.Log("Connected nodes at " + a.Position + " and " + b.Position);

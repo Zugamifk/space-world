@@ -61,4 +61,19 @@ public class Spline
 
         return h00 * p1 + h10 * m0 + h01 * p2 + h11 * m1;
     }
+
+    public void DebugDraw(Color color)
+    {
+        int count = 100;
+        float step = (float)(Points.Count - 1) / (float)(count - 1);
+        float t = step;
+        Vector3 last = Evaluate(0);
+        for (int i = 0; i < count; i++)
+        {
+            var pt = Evaluate(t);
+            Debug.DrawLine(last, pt, color);
+            last = pt;
+            t += step;
+        }
+    }
 }

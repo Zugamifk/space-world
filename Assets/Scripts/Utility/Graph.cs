@@ -2,7 +2,8 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Graph<TVertex, TEdge> {
+public class Graph<TVertex, TEdge>
+{
 
     class VertexInfo
     {
@@ -57,19 +58,22 @@ public class Graph<TVertex, TEdge> {
             };
             m_Edges.Add(edge, info);
             m_Connections.Add(a, b, info);
-        } else
+        }
+        else
         {
-            if(ec)
+            if (ec)
             {
                 Debug.Log(a + " and " + b + " are already connected!");
-            } else if(!ac && !bc)
+            }
+            else if (!ac && !bc)
             {
                 Debug.Log("Can not connect " + a + " and " + b + ", graph does not contain either of them!");
             }
-            else if(!ac)
+            else if (!ac)
             {
                 Debug.Log("Can not connect " + a + " and " + b + ", graph does not contain " + a);
-            } else if (!bc)
+            }
+            else if (!bc)
             {
                 Debug.Log("Can not connect " + a + " and " + b + ", graph does not contain " + b);
             }
@@ -92,18 +96,59 @@ public class Graph<TVertex, TEdge> {
         }
     }
 
-    public bool GetEdgeVertices(TEdge edge, out TVertex a, out TVertex b) {
+    public bool TryGetEdgeVertices(TEdge edge, out TVertex a, out TVertex b)
+    {
         EdgeInfo info;
-        if(m_Edges.TryGetValue(edge, out info))
+        if (m_Edges.TryGetValue(edge, out info))
         {
             a = info.a.vertex;
             b = info.b.vertex;
             return true;
-        } else
+        }
+        else
         {
             a = default(TVertex);
             b = default(TVertex);
             return false;
+        }
+    }
+
+    public bool TryGetEdge(TVertex a, TVertex b, out TEdge edge)
+    {
+        EdgeInfo info;
+        if (m_Connections.TryGetValue(a,b, out info))
+        {
+            edge = info.edge;
+            return true;
+        }
+        else
+        {
+            edge = default(TEdge);
+            return false;
+        }
+    }
+
+    public int GetConnectedEdges(TVertex vert, IList<TEdge> results)
+    {
+        VertexInfo info;
+        if (m_Vertices.TryGetValue(vert, out info))
+        {
+            foreach(var connected in info.connected)
+            {
+                EdgeInfo edge;
+                if(m_Connections.TryGetValue(vert, connected.vertex, out edge))
+                {
+                    results.Add(edge.edge);
+                } else
+                {
+                    Debug.LogError("Error in vertex connections! Vertex " + vert + " has a connection to " + connected.vertex + " but no edge info!");
+                }
+            }
+            return info.connected.Count;
+        } else
+        {
+            Debug.LogError("Vertex " + vert + " is not a part of graph " + this);
+            return 0;
         }
     }
 }
