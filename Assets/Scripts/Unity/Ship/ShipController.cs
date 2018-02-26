@@ -2,9 +2,9 @@
 using System.Collections;
 using System.Collections.Generic;
 
-namespace Unity
+namespace Unity.Ship
 {
-    public class Ship : MonoBehaviour
+    public class ShipController : MonoBehaviour
     {
 
         // how far off we can be before we stop moving
@@ -16,21 +16,13 @@ namespace Unity
         }
 
         [SerializeField]
-        Rigidbody2D m_Body;
+        Transform m_Root;
         [SerializeField]
-        List<ShipComponent> m_Components;
+        ShipExterior m_Exterior;
 
         MoveOrder m_CurrentMove;
 
         public Vector2 position { get; private set; }
-
-        void Awake()
-        {
-            for (int i = 0; i < m_Components.Count; i++)
-            {
-                m_Components[i].Initialize(this);
-            }
-        }
 
         private void Update()
         {
@@ -50,10 +42,22 @@ namespace Unity
             }
         }
 
+        // ===============================
+        // Initialization
+        // ===============================
+        public void SetHull(ShipExterior hull)
+        {
+            m_Exterior = hull;
+            m_Root = m_Exterior.transform;
+        }
+
+        // ===============================
+        // Controls
+        // ===============================
         void ThrustTo(Vector2 destination)
         {
             Vector2 direction = destination - position;
-            Vector2 velocity = m_Body.velocity;
+            Vector2 velocity = m_Exterior.Rigidbody.velocity;
             Thrust(direction - velocity);
         }
 
@@ -67,17 +71,17 @@ namespace Unity
 
         public void Stop()
         {
-            m_Body.velocity = Vector2.zero;
+            m_Exterior.Rigidbody.velocity = Vector2.zero;
         }
 
         public void Thrust(Vector2 dir)
         {
-            m_Body.AddRelativeForce(dir);
+            m_Exterior.Rigidbody.AddRelativeForce(dir);
         }
 
         public Vector2 GetPosition()
         {
-            return m_Body.transform.position;
+            return m_Exterior.Rigidbody.transform.position;
         }
 
     }

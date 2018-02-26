@@ -5,10 +5,10 @@ using UnityEngine;
 public class MarkerTarget : MonoBehaviour {
 
     [SerializeField]
-    BoxCollider2D m_Collider;
+    Collider2D m_Collider;
 
     public Vector2 GetSize()
     {
-        return m_Collider.size;
+        return m_Collider.bounds.size;
     }
 }

@@ -21,6 +21,12 @@ namespace Game.Ship
         {
             return Ship.structure.ConnectNodes(a, b);
         }
+
+        public void MoveNode(Structure.Node node, Vector2 position)
+        {
+            node.Position = position;
+        }
+
         public void RotateNode(Structure.Node node, Structure.FrameSection frame, float angle)
         {
             Ship.structure.RotateEdgeNode(node, frame, angle);

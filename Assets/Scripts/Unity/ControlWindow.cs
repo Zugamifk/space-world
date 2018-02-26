@@ -12,7 +12,7 @@ namespace Unity.UI
         Button m_MovementButton;
 
         [SerializeField]
-        Ship m_Ship;
+        Ship.ShipController m_Ship;
 
         public void MovementButton_OnClick()
         {

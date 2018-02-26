@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-namespace Unity
+namespace Unity.Ship
 {
     public class ShipComponent : MonoBehaviour
     {
@@ -9,9 +9,9 @@ namespace Unity
         [SerializeField]
         SpriteRenderer m_renderer;
 
-        Ship m_Ship;
+        ShipController m_Ship;
 
-        public void Initialize(Ship ship)
+        public void Initialize(ShipController ship)
         {
             m_Ship = ship;
         }

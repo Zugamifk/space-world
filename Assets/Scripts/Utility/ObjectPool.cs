@@ -2,9 +2,10 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class ObjectPool<T> where T : Object
-{
+public class ObjectPool { }
 
+public class ObjectPool<T> : ObjectPool where T : Object
+{
     T m_Template;
     HashSet<T> m_Pool;
     Queue<T> m_FreeObjects;

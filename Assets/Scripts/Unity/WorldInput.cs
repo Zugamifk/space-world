@@ -25,7 +25,7 @@ namespace Unity
         [SerializeField]
         Camera m_Camera;
         [SerializeField]
-        Ship m_PlayerShip;
+        Ship.ShipController m_PlayerShip;
         [SerializeField]
         Player m_Player;
 
@@ -50,7 +50,7 @@ namespace Unity
             m_NeutralMode = new NeutralMode();
             m_PlayerMode = new PlayerMode() { m_Player = m_Player };
             m_CustomMode = new CustomMode();
-            m_CurrentMode = m_PlayerMode;
+            m_CurrentMode = m_NeutralMode;
         }
 
         void Update()

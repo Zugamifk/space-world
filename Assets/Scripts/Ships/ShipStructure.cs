@@ -74,5 +74,12 @@ namespace Game.Ship
             var tan = Vector2.right.Rotate(angle);
             frame.SetTangeant(node, tan*500);
         }
+
+        public List<Vector2> GetOuterHullPoints()
+        {
+            var result = new List<Vector2>();
+
+            return result;
+        }
     }
 }

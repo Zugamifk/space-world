@@ -96,7 +96,6 @@ namespace Unity.UI
 
         void SetNodeEditMode(Structure.Node node)
         {
-            m_NodeInfoPanel.Show(node);
             SetMode(m_NodeEditMode);
             m_NodeEditMode.OnSelectedNode(node);
         }
@@ -245,6 +244,12 @@ namespace Unity.UI
             SetMode(m_BuildMode);
         }
 
+        public void PressedFinish()
+        {
+            SetActive(false);
+            Unity.Ship.ShipObjectBuilder.Instance.BuildShip(m_ShipBuilder.Ship);
+        }
+
         public void PressedBackground()
         {
             if (m_CurrentMode.OnClickedBackground())
@@ -259,6 +264,7 @@ namespace Unity.UI
         void AddedNode(Structure.Node node, ShipNode graphic)
         {
             graphic.SetOnClick(()=> SelectNode(node));
+            graphic.OnDragNode += DragNode(node);
         }
 
         void SelectNode(Structure.Node node)
@@ -267,6 +273,16 @@ namespace Unity.UI
             {
                 RebuildBuildingArea();
             }
+            m_NodeInfoPanel.Show(node);
+        }
+
+        ShipNode.PositionCallback DragNode(Structure.Node node)
+        {
+            return (_, position) =>
+            {
+                m_ShipBuilder.MoveNode(node, position);
+                RebuildBuildingArea();
+            };
         }
 
         void OnUsedNodeHandle(Structure.Node node, Structure.FrameSection frame, float angle)
