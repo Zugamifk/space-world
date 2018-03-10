@@ -4,7 +4,8 @@ using UnityEngine;
 
 public class Graph<TVertex, TEdge>
 {
-
+    // if true, re-adding an edge will replace the old one.
+    public bool CanReplaceEdges = false;
     class VertexInfo
     {
         public TVertex vertex;
@@ -39,12 +40,12 @@ public class Graph<TVertex, TEdge>
         m_Vertices.Add(v, info);
     }
 
-    public void Connect(TVertex a, TVertex b, TEdge edge)
+    public bool Connect(TVertex a, TVertex b, TEdge edge)
     {
-        if(a.Equals(b))
+        if (a.Equals(b))
         {
             Debug.LogError("Both vertices are the same!");
-            return;
+            return false;
         }
         VertexInfo ai, bi;
         EdgeInfo ei;
@@ -53,18 +54,33 @@ public class Graph<TVertex, TEdge>
         bool ec = m_Edges.TryGetValue(edge, out ei);
         if (ac && bc && !ec)
         {
-            ai.connected.Add(bi);
-            bi.connected.Add(ai);
             var info = new EdgeInfo()
             {
                 edge = edge,
                 a = ai,
                 b = bi
             };
-            m_Edges.Add(edge, info);
-            if (!m_Connections.ContainsKeys(a, b))
+            if (ai.connected.Contains(bi))
             {
+                if (CanReplaceEdges)
+                {
+                    var oldEdge = m_Connections[a, b];
+                    m_Connections[a, b] = info;
+                    m_Edges[edge] = info;
+                    m_Edges.Remove(oldEdge.edge);
+                    return true;
+                } else
+                {
+                    return false;
+                }
+            }
+            else
+            {
+                ai.connected.Add(bi);
+                bi.connected.Add(ai);
+                m_Edges.Add(edge, info);
                 m_Connections.Add(a, b, info);
+            return true;
             }
         }
         else
@@ -85,6 +101,7 @@ public class Graph<TVertex, TEdge>
             {
                 Debug.Log("Can not connect " + a + " and " + b + ", graph does not contain " + b);
             }
+            return false;
         }
     }
 
@@ -102,6 +119,11 @@ public class Graph<TVertex, TEdge>
         {
             yield return v;
         }
+    }
+
+    public bool HasEdge(TEdge edge)
+    {
+        return m_Edges.ContainsKey(edge);
     }
 
     public bool TryGetEdgeVertices(TEdge edge, out TVertex a, out TVertex b)
@@ -124,7 +146,7 @@ public class Graph<TVertex, TEdge>
     public bool TryGetEdge(TVertex a, TVertex b, out TEdge edge)
     {
         EdgeInfo info;
-        if (m_Connections.TryGetValue(a,b, out info))
+        if (m_Connections.TryGetValue(a, b, out info))
         {
             edge = info.edge;
             return true;
@@ -141,22 +163,40 @@ public class Graph<TVertex, TEdge>
         VertexInfo info;
         if (m_Vertices.TryGetValue(vert, out info))
         {
-            foreach(var connected in info.connected)
+            foreach (var connected in info.connected)
             {
                 EdgeInfo edge;
-                if(m_Connections.TryGetValue(vert, connected.vertex, out edge))
+                if (m_Connections.TryGetValue(vert, connected.vertex, out edge))
                 {
                     results.Add(edge.edge);
-                } else
+                }
+                else
                 {
                     Debug.LogError("Error in vertex connections! Vertex " + vert + " has a connection to " + connected.vertex + " but no edge info!");
                 }
             }
             return info.connected.Count;
-        } else
+        }
+        else
         {
             Debug.LogError("Vertex " + vert + " is not a part of graph " + this);
             return 0;
+        }
+    }
+
+    public IEnumerable<TVertex> GetConnected(TVertex vert)
+    {
+        VertexInfo info;
+        if (m_Vertices.TryGetValue(vert, out info))
+        {
+            foreach (var v in info.connected)
+            {
+                yield return v.vertex;
+            }
+        }
+        else
+        {
+            Debug.LogError("Vertex " + vert + " is not a part of graph " + this);
         }
     }
 }

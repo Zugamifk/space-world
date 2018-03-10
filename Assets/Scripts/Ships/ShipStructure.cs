@@ -63,8 +63,10 @@ namespace Game.Ship
                 to = b,
                 toTangeant = -diff
             };
-            Skeleton.Connect(a, b, fs);
-            Debug.Log("Connected nodes at " + a.Position + " and " + b.Position);
+            if (Skeleton.Connect(a, b, fs))
+            {
+                Debug.Log("Connected nodes at " + a.Position + " and " + b.Position);
+            }
             return fs;
         }
 
@@ -75,10 +77,20 @@ namespace Game.Ship
             frame.SetTangeant(node, tan*500);
         }
 
+        // todo: this should get all points surrounding the outside of the ship
         public List<Vector2> GetOuterHullPoints()
         {
-            var result = new List<Vector2>();
+            Node first = null;
+            foreach(var vert in Skeleton.AllVertices())
+            {
+                if(first == null ||
+                    first.Position.x > vert.Position.x)
+                {
+                    first = vert;
+                }
+            }
 
+            var result = new List<Vector2>();
             return result;
         }
     }

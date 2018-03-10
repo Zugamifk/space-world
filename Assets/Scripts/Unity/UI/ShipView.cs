@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using Game.Ship;
+using System.Linq;
 
 namespace Unity.UI
 {
@@ -58,6 +59,23 @@ namespace Unity.UI
             m_Ship = ship;
         }
 
+        void ClearView()
+        {
+            foreach(var n in m_NodeLookup.Values)
+            {
+                n.gameObject.SetActive(false);
+                m_NodePool.Return(n);
+            }
+            m_NodeLookup.Clear();
+
+            foreach(var f in m_FrameLookup.Values)
+            {
+                f.gameObject.SetActive(false);
+                m_FramePool.Return(f);
+            }
+            m_FrameLookup.Clear();
+        }
+
         public void RebuildView()
         {
             var nodes = m_Ship.structure.Nodes;
@@ -84,6 +102,16 @@ namespace Unity.UI
                     m_FrameLookup.Add(e, section);
                 }
                 section.Initialize(e);
+            }
+            foreach(var f in m_FrameLookup.Keys.ToList())
+            {
+                if(!skeleton.HasEdge(f))
+                {
+                    var fs = m_FrameLookup[f];
+                    fs.gameObject.SetActive(false);
+                    m_FramePool.Return(fs);
+                    m_FrameLookup.Remove(f);
+                }
             }
         }
 
