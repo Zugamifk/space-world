@@ -1,7 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using Game.Lab.MapGenerator.Token;
+using Game.Lab.MapGenerator.Grammar;
 
 namespace Game.Lab.MapGenerator
 {
@@ -15,9 +15,22 @@ namespace Game.Lab.MapGenerator
             West
         }
 
+        class State
+        {
+            public readonly EOrientation Orientation;
+            public readonly Vector2Int Position;
+
+            public State(EOrientation orientation, Vector2Int position)
+            {
+                Orientation = orientation;
+                Position = position;
+            }
+        }
+
         EOrientation m_Orientation = EOrientation.North;
         Vector2Int m_Position = Vector2Int.zero;
         MapModel m_CurrentModel;
+        Stack<State> m_States = new Stack<State>();
 
         public void Initialize(MapModel model)
         {
@@ -26,7 +39,7 @@ namespace Game.Lab.MapGenerator
             m_CurrentModel = model;
         }
 
-        public void Parse(IEnumerable<MapToken> tokens)
+        public void Parse(IEnumerable<IMapToken> tokens)
         {
             foreach (var t in tokens)
             {
@@ -34,7 +47,7 @@ namespace Game.Lab.MapGenerator
             }
         }
 
-        public void Consume(MapToken token)
+        public void Consume(IMapToken token)
         {
 
         }
@@ -72,15 +85,15 @@ namespace Game.Lab.MapGenerator
                     y0 = Random.Range(0, -h);
                     break;
                 case EOrientation.South:
-                    y0 = 1- h;
+                    y0 = 1 - h;
                     goto case EOrientation.North;
                 case EOrientation.West:
-                    x0 = 1- w;
+                    x0 = 1 - w;
                     goto case EOrientation.East;
             }
-            for (int xi = x0; xi < x0+w; xi++)
+            for (int xi = x0; xi < x0 + w; xi++)
             {
-                for (int yi = y0; yi < y0+h; yi++)
+                for (int yi = y0; yi < y0 + h; yi++)
                 {
                     m_CurrentModel.Tiles[x + xi, y + yi] = mr;
                 }
@@ -98,6 +111,19 @@ namespace Game.Lab.MapGenerator
             {
                 m_Orientation = (EOrientation)(((int)m_Orientation + 1) % 4);
             }
+        }
+
+        public void Consume(Push push)
+        {
+            var state = new State(m_Orientation, m_Position);
+            m_States.Push(state);
+        }
+
+        public void Consume(Pop pop)
+        {
+            var state = m_States.Pop();
+            m_Orientation = state.Orientation;
+            m_Position = state.Position;
         }
 
         void Step()

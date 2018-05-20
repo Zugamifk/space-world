@@ -13,5 +13,15 @@ namespace Unity.UI
         {
             m_GameController.RebuildMap();
         }
+
+        public void Reset_OnClick()
+        {
+            m_GameController.ResetMap();
+        }
+
+        public void NextIter_OnClick()
+        {
+            m_GameController.StepMapIteration();
+        }
     }
 }

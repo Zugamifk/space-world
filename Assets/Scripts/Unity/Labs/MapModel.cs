@@ -19,9 +19,6 @@ namespace Game.Lab
 
         public Tile[,] Tiles;
 
-        // todo: put this somewhere
-        public static MapModel Current;
-
         public MapModel()
         {
             Tiles = new Tile[k_MapSide, k_MapSide];

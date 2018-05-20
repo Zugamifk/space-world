@@ -11,6 +11,7 @@ namespace Unity
         [SerializeField]
         MapView m_MapView;
 
+        MapModel m_MapModel;
         MapController m_MapControl;
 
         private void Awake()
@@ -22,7 +23,19 @@ namespace Unity
         public void RebuildMap()
         {
             m_MapControl.GenerateMap();
-            m_MapView.ResetInitState();
+            m_MapView.Refresh(m_MapControl.CurrentMap);
+        }
+
+        public void ResetMap()
+        {
+            m_MapControl.ResetMap();
+            m_MapView.Refresh(m_MapControl.CurrentMap);
+        }
+
+        public void StepMapIteration()
+        {
+            m_MapControl.StepMapIteration();
+            m_MapView.Refresh(m_MapControl.CurrentMap);
         }
     }
 }

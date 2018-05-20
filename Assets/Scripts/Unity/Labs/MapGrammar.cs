@@ -1,17 +1,17 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using Game.Lab.MapGenerator.Token;
+using Game.Lab.MapGenerator.Grammar;
 
 namespace Game.Lab.MapGenerator
 {
-    public class MapGrammar
+    public abstract class MapGrammar
     {
-        List<MapToken> m_CurrentIteration;
-        List<MapToken> m_IterationWorker;
+        List<IMapToken> m_CurrentIteration;
+        List<IMapToken> m_IterationWorker;
         int m_IterationCount;
 
-        public List<MapToken> CurrentIteration
+        public List<IMapToken> CurrentIteration
         {
             get
             {
@@ -24,38 +24,26 @@ namespace Game.Lab.MapGenerator
             Log.Register(this, "9582CA");
         }
 
-        public void Consume(MapToken token)
+        public virtual void Consume(IMapToken token)
         {
             AddToken(token);
         }
 
-        public void Consume(Start token)
-        {
-            AddToken(new Room());
-        }
+        public virtual void Consume(Start token) { }
 
-        public void Consume(Room token)
-        {
-            AddToken(new Hall());
-            AddToken(new Room());
-        }
+        public virtual void Consume(Room token) { }
 
-        public void Consume(Hall hall)
-        {
-            AddToken(new Hall());
-            AddToken(Turn.Left());
-            AddToken(new Hall());
-        }
+        public virtual void Consume(Hall hall) { }
 
-        void AddToken(MapToken token)
+        protected void AddToken(IMapToken token)
         {
             m_IterationWorker.Add(token);
         }
 
         public void Initialize()
         {
-            m_IterationWorker = new List<MapToken>();
-            m_CurrentIteration = new List<MapToken>();
+            m_IterationWorker = new List<IMapToken>();
+            m_CurrentIteration = new List<IMapToken>();
             m_CurrentIteration.Add(new Start());
             m_IterationCount = 0;
             LogWorker();
@@ -83,7 +71,7 @@ namespace Game.Lab.MapGenerator
             sb.Append("Current iteration: " + m_IterationCount + "\n");
             foreach (var t in m_CurrentIteration)
             {
-                sb.Append("["+t+"]");
+                sb.Append("[" + t + "]");
                 sb.Append(" ");
             }
             Log.Print(this, sb.ToString());

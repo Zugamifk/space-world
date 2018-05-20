@@ -2,30 +2,21 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace Game.Lab.MapGenerator.Token
+namespace Game.Lab.MapGenerator.Grammar
 {
-    public abstract class MapToken
+    public interface IMapToken
     {
-        public virtual void Visit(MapGrammar grammer)
-        {
-            grammer.Consume(this);
-        }
-        public virtual void Visit(MapParser parser)
-        {
-            parser.Consume(this);
-        }
-        public override string ToString()
-        {
-            return "TOKEN[INVALID]";
-        }
+        void Visit(MapGrammar grammar);
+        void Visit(MapParser parser);
+        string ToString();
     }
 
-    public class Start : MapToken {
-        public override void Visit(MapGrammar grammer)
+    public class Start : IMapToken {
+        public void Visit(MapGrammar grammar)
         {
-            grammer.Consume(this);
+            grammar.Consume(this);
         }
-        public override void Visit(MapParser parser)
+        public void Visit(MapParser parser)
         {
             parser.Consume(this);
         }
@@ -35,12 +26,12 @@ namespace Game.Lab.MapGenerator.Token
         }
     }
 
-    public class Hall : MapToken {
-        public override void Visit(MapGrammar grammer)
+    public class Hall : IMapToken {
+        public void Visit(MapGrammar grammar)
         {
-            grammer.Consume(this);
+            grammar.Consume(this);
         }
-        public override void Visit(MapParser parser)
+        public void Visit(MapParser parser)
         {
             parser.Consume(this);
         }
@@ -50,12 +41,12 @@ namespace Game.Lab.MapGenerator.Token
         }
     }
 
-    public class Room : MapToken {
-        public override void Visit(MapGrammar grammer)
+    public class Room : IMapToken {
+        public void Visit(MapGrammar grammar)
         {
-            grammer.Consume(this);
+            grammar.Consume(this);
         }
-        public override void Visit(MapParser parser)
+        public void Visit(MapParser parser)
         {
             parser.Consume(this);
         }
@@ -65,7 +56,7 @@ namespace Game.Lab.MapGenerator.Token
         }
     }
 
-    public class Turn : MapToken
+    public class Turn : IMapToken
     {
         public readonly bool IsLeft;
         Turn(bool isleft)
@@ -80,11 +71,11 @@ namespace Game.Lab.MapGenerator.Token
         {
             return new Turn(false);
         }
-        public override void Visit(MapGrammar grammer)
+        public void Visit(MapGrammar grammar)
         {
-            grammer.Consume(this);
+            grammar.Consume(this);
         }
-        public override void Visit(MapParser parser)
+        public void Visit(MapParser parser)
         {
             parser.Consume(this);
         }
@@ -94,4 +85,35 @@ namespace Game.Lab.MapGenerator.Token
         }
     }
 
+    public class Push : IMapToken
+    {
+        public void Visit(MapGrammar grammar)
+        {
+            grammar.Consume(this);
+        }
+        public void Visit(MapParser parser)
+        {
+            parser.Consume(this);
+        }
+        public override string ToString()
+        {
+            return "<";
+        }
+    }
+
+    public class Pop : IMapToken
+    {
+        public void Visit(MapGrammar grammar)
+        {
+            grammar.Consume(this);
+        }
+        public void Visit(MapParser parser)
+        {
+            parser.Consume(this);
+        }
+        public override string ToString()
+        {
+            return ">";
+        }
+    }
 }
