@@ -6,6 +6,8 @@ namespace Game.Lab.MapGenerator
 {
     public class MapBuilder
     {
+        const int k_IterCount = 3;
+
         MapModel m_Model;
         MapGrammar m_Grammar;
         MapParser m_Parser;
@@ -28,7 +30,7 @@ namespace Game.Lab.MapGenerator
             m_Model = new MapModel();
             m_Grammar = new MapGrammar();
             m_Grammar.Initialize();
-            for(int i=0;i<5;i++)
+            for(int i=0;i<k_IterCount;i++)
             {
                 m_Grammar.Iterate();
             }

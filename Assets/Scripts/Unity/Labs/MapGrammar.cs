@@ -26,18 +26,30 @@ namespace Game.Lab.MapGenerator
 
         public void Consume(MapToken token)
         {
-            m_IterationWorker.Add(token);
+            AddToken(token);
         }
 
         public void Consume(Start token)
         {
-            m_IterationWorker.Add(new Room());
+            AddToken(new Room());
         }
 
         public void Consume(Room token)
         {
-            m_IterationWorker.Add(new Hall());
-            m_IterationWorker.Add(new Room());
+            AddToken(new Hall());
+            AddToken(new Room());
+        }
+
+        public void Consume(Hall hall)
+        {
+            AddToken(new Hall());
+            AddToken(Turn.Left());
+            AddToken(new Hall());
+        }
+
+        void AddToken(MapToken token)
+        {
+            m_IterationWorker.Add(token);
         }
 
         public void Initialize()
@@ -71,7 +83,7 @@ namespace Game.Lab.MapGenerator
             sb.Append("Current iteration: " + m_IterationCount + "\n");
             foreach (var t in m_CurrentIteration)
             {
-                sb.Append(t);
+                sb.Append("["+t+"]");
                 sb.Append(" ");
             }
             Log.Print(this, sb.ToString());

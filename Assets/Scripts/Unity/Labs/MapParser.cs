@@ -61,14 +61,43 @@ namespace Game.Lab.MapGenerator
                 Position = m_Position,
                 Size = new Vector2Int(w, h)
             };
-            for (int xi = 0; xi < w; xi++)
+            int x0 = 0;
+            int y0 = 0;
+            switch (m_Orientation)
             {
-                for (int yi = 0; yi < h; yi++)
+                case EOrientation.North:
+                    x0 = Random.Range(0, -w);
+                    break;
+                case EOrientation.East:
+                    y0 = Random.Range(0, -h);
+                    break;
+                case EOrientation.South:
+                    y0 = 1- h;
+                    goto case EOrientation.North;
+                case EOrientation.West:
+                    x0 = 1- w;
+                    goto case EOrientation.East;
+            }
+            for (int xi = x0; xi < x0+w; xi++)
+            {
+                for (int yi = y0; yi < y0+h; yi++)
                 {
                     m_CurrentModel.Tiles[x + xi, y + yi] = mr;
                 }
             }
             Step();
+        }
+
+        public void Consume(Turn turn)
+        {
+            if (turn.IsLeft)
+            {
+                m_Orientation = (EOrientation)(((int)m_Orientation + 3) % 4);
+            }
+            else
+            {
+                m_Orientation = (EOrientation)(((int)m_Orientation + 1) % 4);
+            }
         }
 
         void Step()

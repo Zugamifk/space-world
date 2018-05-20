@@ -8,7 +8,7 @@ namespace Unity.Lab
     public class MapView : MonoBehaviour
     {
         bool m_Initialized;
-        List<Tile> m_Tiles;
+        List<Tile> m_Tiles = new List<Tile>();
 
         private void Update()
         {
@@ -21,7 +21,6 @@ namespace Unity.Lab
         {
             var model = MapModel.Current;
             m_Initialized = true;
-            m_Tiles = new List<Tile>();
             for (int x=0;x<model.Tiles.GetLength(0);x++)
             {
                 for (int y = 0; y < model.Tiles.GetLength(1); y++)
@@ -36,6 +35,16 @@ namespace Unity.Lab
                     }
                 }
             }
+        }
+
+        public void ResetInitState()
+        {
+            m_Initialized = false;
+            foreach(var t in m_Tiles)
+            {
+                Destroy(t.gameObject);
+            }
+            m_Tiles.Clear();
         }
     }
 }

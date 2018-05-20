@@ -18,7 +18,8 @@ public static class Log
         string m_ArgColor;
         public Decorator(object obj, string classColor, string argColor)
         {
-            m_ObjectString = obj.GetType().ToString();
+            var className = obj.GetType().ToString();
+            m_ObjectString = className.Substring(className.LastIndexOf('.')+1);
             m_ClassColor = classColor;
             m_ArgColor = argColor;
         }
@@ -43,7 +44,7 @@ public static class Log
     {
         int hash = obj.GetHashCode();
         Decorator decorator = new Decorator(obj, classColor, argColor);
-        m_DecoratorLookup.Add(hash, decorator);
+        m_DecoratorLookup[hash] = decorator;
     }
 
     public static void Print(object obj, string msg,params object[] args)
