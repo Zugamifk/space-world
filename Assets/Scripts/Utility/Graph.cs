@@ -4,8 +4,16 @@ using UnityEngine;
 
 public class Graph<TVertex, TEdge>
 {
-    // if true, re-adding an edge will replace the old one.
+    /// <summary>
+    /// if true, re-adding an edge will replace the old one.
+    /// </summary>
     public bool CanReplaceEdges = false;
+
+    /// <summary>
+    /// If true, connecting edges will connect them from a to b. If false, both will be connected to each other.
+    /// </summary>
+    public bool Directed = false;
+
     class VertexInfo
     {
         public TVertex vertex;
@@ -69,7 +77,8 @@ public class Graph<TVertex, TEdge>
                     m_Edges[edge] = info;
                     m_Edges.Remove(oldEdge.edge);
                     return true;
-                } else
+                }
+                else
                 {
                     return false;
                 }
@@ -77,10 +86,13 @@ public class Graph<TVertex, TEdge>
             else
             {
                 ai.connected.Add(bi);
-                bi.connected.Add(ai);
+                if (!Directed)
+                {
+                    bi.connected.Add(ai);
+                }
                 m_Edges.Add(edge, info);
                 m_Connections.Add(a, b, info);
-            return true;
+                return true;
             }
         }
         else
@@ -124,6 +136,11 @@ public class Graph<TVertex, TEdge>
     public bool HasEdge(TEdge edge)
     {
         return m_Edges.ContainsKey(edge);
+    }
+
+    public bool HasVertex(TVertex vertex)
+    {
+        return m_Vertices.ContainsKey(vertex);
     }
 
     public bool TryGetEdgeVertices(TEdge edge, out TVertex a, out TVertex b)

@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿#define LOG_SHIP_STRUCTURE
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -31,14 +32,18 @@ namespace Game.Ship
                 }
             }
         }
+        public class Frame : Graph<Node, FrameSection> { }
 
-        public Graph<Node, FrameSection> Skeleton;
+        public Frame Skeleton;
         public List<Node> Nodes;
 
         public Structure()
         {
-            Skeleton = new Graph<Node, FrameSection>();
+            Skeleton = new Frame();
             Nodes = new List<Node>();
+#if LOG_SHIP_STRUCTURE
+            Log.Register(this, "5A6468");
+#endif
         }
 
         public Node AddNode(Vector2 position)
@@ -49,7 +54,7 @@ namespace Game.Ship
             };
             Skeleton.Add(node);
             Nodes.Add(node);
-            Debug.Log("Added node at " + position);
+            Log.Print(this, "Added node at {0}", position);
             return node;
         }
 
@@ -65,7 +70,7 @@ namespace Game.Ship
             };
             if (Skeleton.Connect(a, b, fs))
             {
-                Debug.Log("Connected nodes at " + a.Position + " and " + b.Position);
+                Log.Print(this, "Connected nodes at {0} and {1}", a.Position, b.Position);
             }
             return fs;
         }

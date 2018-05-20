@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using Game.Ship.Builder;
 using Game.Ship;
 
 namespace Unity.UI
@@ -168,6 +169,12 @@ namespace Unity.UI
             public ShipBuilder Builder;
             Structure.Node m_LastNode;
 
+            public override void SetActive(bool active)
+            {
+                m_LastNode = null;
+                base.SetActive(active);
+            }
+
             public override void ConsumeInput(WorldInput.InputState input)
             {
                 if(input.alt)
@@ -185,7 +192,7 @@ namespace Unity.UI
                     return true;
                 } else
                 {
-                    Screen.SetIdleMode();
+                    m_LastNode = node;
                     return false;
                 }
             }

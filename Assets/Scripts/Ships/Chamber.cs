@@ -6,7 +6,7 @@ namespace Game.Ship
 {
     public class Chamber
     {
-        Graph<Structure.Node, Structure.FrameSection> m_Frame;
+        Structure.Frame m_Frame;
 
     }
 }
