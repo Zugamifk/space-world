@@ -45,6 +45,7 @@ namespace Game.Lab
         {
             m_Builder.StepIteration();
             m_Builder.Build();
+            m_Model = m_Builder.Current;
         }
     }
 }

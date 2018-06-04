@@ -9,6 +9,7 @@ namespace Game.Lab
         const int k_MapSide = 1024;
         public class Tile
         {
+            public string Identifier;
             public Vector2 Position;
         }
 

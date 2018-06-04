@@ -58,7 +58,8 @@ namespace Game.Lab.MapGenerator
             int y = m_Position.y;
             m_CurrentModel.Tiles[x, y] = new MapModel.Tile()
             {
-                Position = m_Position
+                Position = m_Position,
+                Identifier = hall.ToString()
             };
             Step();
         }
@@ -72,7 +73,8 @@ namespace Game.Lab.MapGenerator
             var mr = new MapModel.Room()
             {
                 Position = m_Position,
-                Size = new Vector2Int(w, h)
+                Size = new Vector2Int(w, h),
+                Identifier = room.ToString()
             };
             int x0 = 0;
             int y0 = 0;

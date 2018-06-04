@@ -9,6 +9,7 @@ namespace Game.Lab.MapGenerator.Grammar
         void Visit(MapGrammar grammar);
         void Visit(MapParser parser);
         string ToString();
+
     }
 
     public class Start : IMapToken {
@@ -27,11 +28,11 @@ namespace Game.Lab.MapGenerator.Grammar
     }
 
     public class Hall : IMapToken {
-        public void Visit(MapGrammar grammar)
+        public virtual void Visit(MapGrammar grammar)
         {
             grammar.Consume(this);
         }
-        public void Visit(MapParser parser)
+        public virtual void Visit(MapParser parser)
         {
             parser.Consume(this);
         }
@@ -42,11 +43,11 @@ namespace Game.Lab.MapGenerator.Grammar
     }
 
     public class Room : IMapToken {
-        public void Visit(MapGrammar grammar)
+        public virtual void Visit(MapGrammar grammar)
         {
             grammar.Consume(this);
         }
-        public void Visit(MapParser parser)
+        public virtual void Visit(MapParser parser)
         {
             parser.Consume(this);
         }

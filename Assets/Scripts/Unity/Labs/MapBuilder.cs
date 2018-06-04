@@ -18,7 +18,7 @@ namespace Game.Lab.MapGenerator
         {
             Log.Register(this, "409140");
 
-            m_Grammar = new Grammar.TestGrammar();
+            m_Grammar = new Grammar.Test.TestGrammar();
             m_Parser = new MapParser();
             m_Initialized = false;
         }
@@ -43,7 +43,6 @@ namespace Game.Lab.MapGenerator
 
         public MapBuilder Initialize()
         {
-            m_Model = new MapModel();
             m_Grammar.Initialize();
             m_Initialized = true;
             return this;
@@ -61,6 +60,7 @@ namespace Game.Lab.MapGenerator
 
         public MapBuilder Build()
         {
+            m_Model = new MapModel();
             m_Parser.Initialize(m_Model);
             m_Parser.Parse(m_Grammar.CurrentIteration);
             return this;

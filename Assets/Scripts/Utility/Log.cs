@@ -9,7 +9,7 @@ public static class Log
     const string k_DefaultCallerColor = "529371";
     const string k_DefaultArgColor = "662351";
 
-    static readonly object k_DefaultObject = new object();
+    static readonly int k_DefaultObjectKey;
     class Decorator
     {
         const string k_FormatString = "[<color=#{0}>{1}</color>.<color=#{2}>{3}</color>] {4}";
@@ -37,7 +37,8 @@ public static class Log
     static Dictionary<int, Decorator> m_DecoratorLookup = new Dictionary<int, Decorator>();
     static Log()
     {
-        Register(k_DefaultObject);
+        k_DefaultObjectKey = (new object()).GetHashCode();
+        Register(k_DefaultObjectKey);
     }
 
     public static void Register(object obj, string classColor = k_DefaultClassColor, string argColor = k_DefaultArgColor)
@@ -49,11 +50,11 @@ public static class Log
 
     public static void Print(object obj, string msg,params object[] args)
     {
-        if(obj == null)
+        Decorator decorator;
+        if (obj == null || !m_DecoratorLookup.TryGetValue(obj.GetHashCode(), out decorator))
         {
-            obj = k_DefaultObject;
+            decorator = m_DecoratorLookup[k_DefaultObjectKey];
         }
-        Decorator decorator = m_DecoratorLookup[obj.GetHashCode()];
         UnityEngine.Debug.Log(decorator.Format(GetCaller(), msg, args));
     }
 

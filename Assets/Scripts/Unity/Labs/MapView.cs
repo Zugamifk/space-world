@@ -9,6 +9,11 @@ namespace Unity.Lab
     {
         List<Tile> m_Tiles = new List<Tile>();
 
+        private void Awake()
+        {
+            Log.Register(this, "56ABAE");
+        }
+
         public void Refresh(MapModel model)
         {
             foreach(var t in m_Tiles)
@@ -24,9 +29,11 @@ namespace Unity.Lab
                     var data = model.Tiles[x, y];
                     if (data != null)
                     {
+                    Log.Print(this, "tile {0}", data.Identifier);
                         var t = AssetLookup.Get<Tile>();
                         t.transform.SetParent(transform);
                         t.transform.position = new Vector3(x, y, 0);
+                        t.Identifier = data.Identifier;
                         m_Tiles.Add(t);
                     }
                 }

@@ -8,5 +8,6 @@ namespace Unity.Lab
     {
         [SerializeField]
         SpriteRenderer m_Renderer;
+        public string Identifier;
     }
 }

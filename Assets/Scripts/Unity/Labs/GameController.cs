@@ -18,6 +18,7 @@ namespace Unity
         {
             m_MapControl = new MapController();
             m_MapControl.GenerateMap();
+            m_MapView.Refresh(m_MapControl.CurrentMap);
         }
 
         public void RebuildMap()
